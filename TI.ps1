@@ -1,12 +1,8 @@
-if (!([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] 'Administrator')) {
+$installer = "SQBuAHMAdABhAGwAbAAtAE0AbwBkAHUAbABlACAAIgBOAHQATwBiAGoAZQBjAHQATQBhAG4AYQBnAGUAcgAiACAALQBTAGMAbwBwAGUAIABDAHUAcgByAGUAbgB0AFUAcwBlAHIAIAAtAEYAbwByAGMAZQANAAoASQBtAHAAbwByAHQALQBNAG8AZAB1AGwAZQAgAE4AdABPAGIAagBlAGMAdABNAGEAbgBhAGcAZQByAA0ACgBTAHQAYQByAHQALQBTAGUAcgB2AGkAYwBlACAALQBOAGEAbQBlACAAVAByAHUAcwB0AGUAZABJAG4AcwB0AGEAbABsAGUAcgANAAoAJABwAGEAcgBlAG4AdAAgAD0AIABHAGUAdAAtAE4AdABQAHIAbwBjAGUAcwBzACAALQBTAGUAcgB2AGkAYwBlAE4AYQBtAGUAIABUAHIAdQBzAHQAZQBkAEkAbgBzAHQAYQBsAGwAZQByAA0ACgBOAGUAdwAtAFcAaQBuADMAMgBQAHIAbwBjAGUAcwBzACAALQBDAG8AbQBtAGEAbgBkAEwAaQBuAGUAIAAnAGMAbQBkAC4AZQB4AGUAIAAvAGsAIAAiAHAAcgBvAG0AcAB0ACAAVAByAHUAcwB0AGUAZABJAG4AcwB0AGEAbABsAGUAcgAkAEcAIAAmACAAYwBsAHMAIAAmACAAdwBoAG8AYQBtAGkAIgAnACAALQBDAHIAZQBhAHQAaQBvAG4ARgBsAGEAZwBzACAATgBlAHcAQwBvAG4AcwBvAGwAZQAgAC0AUABhAHIAZQBuAHQAUAByAG8AYwBlAHMAcwAgACQAcABhAHIAZQBuAHQADQAKAGUAeABpAHQA"
+if (-not ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] 'Administrator')) {
     Write-Host "Requesting administrative privileges..."
-    Start-Process -FilePath "powershell.exe" -Verb RunAs -ArgumentList ('-ExecutionPolicy Bypass -File "{0}"' -f $MyInvocation.MyCommand.Path) -WindowStyle Minimized
+    Start-Process -FilePath "powershell.exe" -Verb RunAs -ArgumentList "-ExecutionPolicy Bypass -EncodedCommand $installer" -WindowStyle Minimized
     Write-Host "Trying to run as TrustedInstaller"
     exit
 }
-Install-Module "NtObjectManager" -Scope CurrentUser -Force
-Import-Module NtObjectManager
-Start-Service -Name TrustedInstaller
-$parent = Get-NtProcess -ServiceName TrustedInstaller
-New-Win32Process -CommandLine 'cmd.exe /k "prompt TrustedInstaller$G & cls & whoami"' -CreationFlags NewConsole -ParentProcess $parent
-exit
+Invoke-Expression ([Text.Encoding]::Unicode.GetString([Convert]::FromBase64String($installer)))
